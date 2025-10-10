@@ -1,10 +1,17 @@
 import { NavLink } from "react-router-dom";
-import { Home, Package, ShoppingCart, Receipt, Users, Wallet, Lightbulb, User, Moon, Sun } from "lucide-react";
+import { Home, Package, ShoppingCart, Receipt, Users, Wallet, Lightbulb, User, Moon, Sun, LogOut, Globe, WifiOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Navigation = () => {
   const [isDark, setIsDark] = useState(false);
+  const { signOut } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
+  const { isOnline, isSyncing } = useOfflineSync();
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -16,14 +23,14 @@ export const Navigation = () => {
   }, [isDark]);
 
   const navItems = [
-    { to: "/", icon: Home, label: "Dashboard" },
-    { to: "/inventory", icon: Package, label: "Inventory" },
-    { to: "/sales", icon: ShoppingCart, label: "Sales" },
-    { to: "/expenses", icon: Receipt, label: "Expenses" },
-    { to: "/customers", icon: Users, label: "Customers" },
-    { to: "/loans", icon: Wallet, label: "Loans" },
-    { to: "/tips", icon: Lightbulb, label: "Tips" },
-    { to: "/profile", icon: User, label: "Profile" },
+    { to: "/", icon: Home, label: t('dashboard') },
+    { to: "/inventory", icon: Package, label: t('inventory') },
+    { to: "/sales", icon: ShoppingCart, label: t('sales') },
+    { to: "/expenses", icon: Receipt, label: t('expenses') },
+    { to: "/customers", icon: Users, label: t('customers') },
+    { to: "/loans", icon: Wallet, label: t('loans') },
+    { to: "/tips", icon: Lightbulb, label: t('tips') },
+    { to: "/profile", icon: User, label: t('profile') },
   ];
 
   return (
@@ -60,6 +67,33 @@ export const Navigation = () => {
                 </NavLink>
               ))}
               
+              {/* Offline/Syncing Indicator */}
+              {!isOnline && (
+                <div className="flex items-center space-x-1 px-3 py-2 rounded-lg bg-destructive/10 text-destructive">
+                  <WifiOff className="h-4 w-4" />
+                  <span className="text-sm font-medium">{t('offlineMode')}</span>
+                </div>
+              )}
+              {isSyncing && (
+                <div className="flex items-center space-x-1 px-3 py-2 rounded-lg bg-secondary/10 text-secondary">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm font-medium">{t('syncing')}</span>
+                </div>
+              )}
+
+              {/* Language Selector */}
+              <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
+                <SelectTrigger className="w-[100px]">
+                  <Globe className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ha">Hausa</SelectItem>
+                  <SelectItem value="pidgin">Pidgin</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Button
                 variant="ghost"
                 size="icon"
@@ -67,6 +101,16 @@ export const Navigation = () => {
                 className="ml-2"
               >
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => signOut()}
+                className="ml-2"
+                title={t('logout')}
+              >
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -83,15 +127,30 @@ export const Navigation = () => {
             <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               SabiBoss
             </span>
+            {!isOnline && <WifiOff className="h-4 w-4 text-destructive" />}
+            {isSyncing && <Loader2 className="h-4 w-4 animate-spin text-secondary" />}
           </div>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsDark(!isDark)}
-          >
-            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
+              <SelectTrigger className="w-[90px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">EN</SelectItem>
+                <SelectItem value="ha">HA</SelectItem>
+                <SelectItem value="pidgin">PG</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDark(!isDark)}
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       </div>
 
