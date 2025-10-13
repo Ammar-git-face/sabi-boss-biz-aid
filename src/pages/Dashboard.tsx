@@ -1,69 +1,130 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Users, Package, Receipt, Wallet } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useSales } from "@/hooks/useSales";
+import { useExpenses } from "@/hooks/useExpenses";
+import { useInventory } from "@/hooks/useInventory";
+import { useCustomers } from "@/hooks/useCustomers";
+import { useLoans } from "@/hooks/useLoans";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Gamification } from "@/components/Gamification";
+import { useMemo } from "react";
 
 const Dashboard = () => {
+  const { sales, loading: salesLoading } = useSales();
+  const { expenses, loading: expensesLoading } = useExpenses();
+  const { inventory, loading: inventoryLoading } = useInventory();
+  const { customers, loading: customersLoading } = useCustomers();
+  const { loans, loading: loansLoading } = useLoans();
+  const { t } = useLanguage();
+
+  // Calculate real stats
+  const totalSales = useMemo(() => 
+    sales.reduce((sum, sale) => sum + (sale.price * sale.quantity), 0), [sales]
+  );
+  
+  const totalExpenses = useMemo(() => 
+    expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]
+  );
+  
+  const profit = totalSales - totalExpenses;
+  
+  const totalLoans = useMemo(() => 
+    loans
+      .filter(loan => loan.loan_type === 'taken')
+      .reduce((sum, loan) => sum + loan.amount - loan.amount_repaid, 0), [loans]
+  );
+
+  const lowStockItems = useMemo(() => 
+    inventory.filter(item => item.quantity <= item.reorder_level).length, [inventory]
+  );
+
   const stats = [
     { 
-      label: "Today's Sales", 
-      value: "₦45,000", 
-      change: "+12%", 
+      label: t('totalSales'), 
+      value: `₦${totalSales.toLocaleString()}`, 
+      change: `${sales.length} ${t('sales')}`, 
       trend: "up",
       icon: TrendingUp,
       color: "primary"
     },
     { 
-      label: "Total Customers", 
-      value: "156", 
-      change: "+8", 
+      label: t('customers'), 
+      value: customers.length.toString(), 
+      change: `${t('total')} ${t('customers')}`, 
       trend: "up",
       icon: Users,
       color: "secondary"
     },
     { 
-      label: "Expenses", 
-      value: "₦12,500", 
-      change: "-5%", 
+      label: t('expenses'), 
+      value: `₦${totalExpenses.toLocaleString()}`, 
+      change: `${expenses.length} entries`, 
       trend: "down",
       icon: Receipt,
       color: "accent"
     },
     { 
-      label: "Loan Balance", 
-      value: "₦50,000", 
-      change: "Due in 15 days", 
-      trend: "neutral",
+      label: t('loans'), 
+      value: `₦${totalLoans.toLocaleString()}`, 
+      change: `${lowStockItems} low stock`, 
+      trend: totalLoans > 0 ? "neutral" : "up",
       icon: Wallet,
       color: "destructive"
     },
   ];
 
-  const salesData = [
-    { day: "Mon", sales: 12000 },
-    { day: "Tue", sales: 19000 },
-    { day: "Wed", sales: 15000 },
-    { day: "Thu", sales: 25000 },
-    { day: "Fri", sales: 32000 },
-    { day: "Sat", sales: 45000 },
-    { day: "Sun", sales: 28000 },
-  ];
+  // Group sales by day for chart
+  const salesData = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
 
-  const expensesData = [
-    { name: "Rent", value: 25000, color: "hsl(var(--primary))" },
-    { name: "Transport", value: 8000, color: "hsl(var(--secondary))" },
-    { name: "Utilities", value: 6000, color: "hsl(var(--accent))" },
-    { name: "Stock", value: 35000, color: "hsl(var(--muted))" },
-    { name: "Others", value: 12000, color: "hsl(var(--destructive))" },
-  ];
+    return last7Days.map((date, index) => {
+      const daySales = sales.filter(sale => sale.sale_date.startsWith(date));
+      const total = daySales.reduce((sum, sale) => sum + (sale.price * sale.quantity), 0);
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = dayNames[new Date(date).getDay()];
+      return { day: dayName, sales: total };
+    });
+  }, [sales]);
+
+  // Group expenses by category
+  const expensesData = useMemo(() => {
+    const categoryTotals = expenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const colors = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "hsl(var(--muted))", "hsl(var(--destructive))"];
+    return Object.entries(categoryTotals).map(([name, value], index) => ({
+      name,
+      value,
+      color: colors[index % colors.length]
+    }));
+  }, [expenses]);
+
+  if (salesLoading || expensesLoading || inventoryLoading || customersLoading || loansLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+        <p className="text-lg">{t('loading')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Welcome Back!</h1>
+          <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
           <p className="text-muted-foreground">Here's what's happening with your business today</p>
         </div>
       </div>
+
+      {/* Gamification */}
+      <Gamification />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

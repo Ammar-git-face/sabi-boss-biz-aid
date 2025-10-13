@@ -47,6 +47,13 @@ export const translations: Translations = {
   date: { en: 'Date', ha: 'Kwanan wata', pidgin: 'Date' },
   amount: { en: 'Amount', ha: 'Adadi', pidgin: 'Amount' },
   description: { en: 'Description', ha: 'Bayani', pidgin: 'Description' },
+  loading: { en: 'Loading...', ha: 'Ana lodi...', pidgin: 'Dey load...' },
+  
+  // Actions
+  recordSale: { en: 'Record Sale', ha: 'Yi rikodin tallace-tallace', pidgin: 'Record Sale' },
+  recordVoice: { en: 'Record Voice', ha: 'Yi rikodin murya', pidgin: 'Record Voice' },
+  sendWhatsApp: { en: 'Send WhatsApp', ha: 'Aika WhatsApp', pidgin: 'Send WhatsApp' },
+  upgradePlan: { en: 'Upgrade to Premium', ha: 'Haɓaka zuwa Premium', pidgin: 'Upgrade to Premium' },
   
   // Subscription
   freeTier: { en: 'Free Tier', ha: 'Kyauta', pidgin: 'Free Plan' },

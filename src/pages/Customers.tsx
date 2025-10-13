@@ -2,46 +2,52 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Users, Phone, Mail } from "lucide-react";
+import { Plus, Users, Phone, Mail, MessageCircle, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-
-interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  totalPurchases: number;
-  lastVisit: string;
-}
+import { useCustomers } from "@/hooks/useCustomers";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
 
 const Customers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([
-    { id: 1, name: "Adeola Johnson", phone: "0801234567", email: "adeola@email.com", totalPurchases: 125000, lastVisit: "2025-01-08" },
-    { id: 2, name: "Chidi Okonkwo", phone: "0809876543", email: "chidi@email.com", totalPurchases: 95000, lastVisit: "2025-01-07" },
-    { id: 3, name: "Fatima Bello", phone: "0807654321", email: "fatima@email.com", totalPurchases: 78000, lastVisit: "2025-01-06" },
-  ]);
-
+  const { customers, loading, addCustomer, deleteCustomer } = useCustomers();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "", email: "" });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCustomers([...customers, { 
-      id: Date.now(), 
-      ...formData, 
-      totalPurchases: 0,
-      lastVisit: new Date().toISOString().split('T')[0]
-    }]);
+    await addCustomer(formData);
     setIsOpen(false);
     setFormData({ name: "", phone: "", email: "" });
   };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this customer?')) {
+      await deleteCustomer(id);
+    }
+  };
+
+  const sendWhatsApp = (phone: string, name: string) => {
+    const message = encodeURIComponent(`Hello ${name}, thank you for being a valued customer at our business!`);
+    const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '234')}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+    toast.success('Opening WhatsApp...');
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+        <p className="text-lg">{t('loading')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
+          <h1 className="text-3xl font-bold">{t('customers')}</h1>
           <p className="text-muted-foreground">Manage your customer database</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -124,14 +130,32 @@ const Customers = () => {
                 {customer.email}
               </div>
             </div>
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-muted-foreground">Total Purchases:</span>
-                <span className="font-semibold">₦{customer.totalPurchases.toLocaleString()}</span>
+                <span className="font-semibold">₦{customer.total_purchases.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Last Visit:</span>
-                <span className="text-sm">{customer.lastVisit}</span>
+                <span className="text-sm">{new Date(customer.last_visit).toLocaleDateString()}</span>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => sendWhatsApp(customer.phone, customer.name)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={() => handleDelete(customer.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
             </div>
           </Card>

@@ -2,43 +2,46 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface Expense {
-  id: number;
-  category: string;
-  amount: number;
-  description: string;
-  date: string;
-}
+import { useExpenses } from "@/hooks/useExpenses";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 const Expenses = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: 1, category: "Rent", amount: 25000, description: "Shop rent", date: "2025-01-01" },
-    { id: 2, category: "Transport", amount: 3500, description: "Fuel", date: "2025-01-08" },
-    { id: 3, category: "Stock", amount: 45000, description: "New inventory", date: "2025-01-07" },
-  ]);
-
+  const { expenses, loading, addExpense, deleteExpense } = useExpenses();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({ category: "", amount: 0, description: "" });
+  const [voiceNote, setVoiceNote] = useState<Blob | null>(null);
 
   const categories = ["Rent", "Transport", "Utilities", "Stock", "Marketing", "Salary", "Others"];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setExpenses([...expenses, { 
-      id: Date.now(), 
-      ...formData, 
-      date: new Date().toISOString().split('T')[0]
-    }]);
+    await addExpense(formData);
     setIsOpen(false);
     setFormData({ category: "", amount: 0, description: "" });
+    setVoiceNote(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this expense?')) {
+      await deleteExpense(id);
+    }
   };
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+        <p className="text-lg">{t('loading')}</p>
+      </div>
+    );
+  }
 
   const categoryColors: Record<string, string> = {
     "Rent": "primary",
@@ -54,7 +57,7 @@ const Expenses = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Expenses</h1>
+          <h1 className="text-3xl font-bold">{t('expenses')}</h1>
           <p className="text-muted-foreground">Track your business expenses</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -101,6 +104,10 @@ const Expenses = () => {
                   required
                 />
               </div>
+              <div>
+                <Label>Voice Note (Optional)</Label>
+                <VoiceRecorder onRecordingComplete={(blob) => setVoiceNote(blob)} />
+              </div>
               <Button type="submit" className="w-full bg-gradient-primary">
                 Log Expense
               </Button>
@@ -127,12 +134,21 @@ const Expenses = () => {
                   <div>
                     <h4 className="font-bold">{expense.category}</h4>
                     <p className="text-sm text-muted-foreground">{expense.description}</p>
-                    <p className="text-xs text-muted-foreground">{expense.date}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(expense.expense_date).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right flex items-center space-x-4">
                 <p className="text-2xl font-bold text-destructive">-₦{expense.amount.toLocaleString()}</p>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={() => handleDelete(expense.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
             </div>
           </Card>

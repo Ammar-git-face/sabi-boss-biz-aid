@@ -2,61 +2,85 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Search, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-
-interface Product {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-  cost: number;
-}
+import { useInventory } from "@/hooks/useInventory";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Inventory = () => {
-  const [products, setProducts] = useState<Product[]>([
-    { id: 1, name: "Rice (50kg)", quantity: 15, price: 35000, cost: 28000 },
-    { id: 2, name: "Cooking Oil (5L)", quantity: 30, price: 8500, cost: 7000 },
-    { id: 3, name: "Tomato Paste", quantity: 45, price: 450, cost: 350 },
-  ]);
-
+  const { inventory, loading, addItem, updateItem, deleteItem } = useInventory();
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({ name: "", quantity: 0, price: 0, cost: 0 });
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    category: "", 
+    quantity: 0, 
+    unit_price: 0, 
+    reorder_level: 5 
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? { ...editingProduct, ...formData } : p));
+      await updateItem(editingProduct.id, formData);
     } else {
-      setProducts([...products, { id: Date.now(), ...formData }]);
+      await addItem(formData);
     }
     setIsOpen(false);
-    setFormData({ name: "", quantity: 0, price: 0, cost: 0 });
+    setFormData({ name: "", category: "", quantity: 0, unit_price: 0, reorder_level: 5 });
     setEditingProduct(null);
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: any) => {
     setEditingProduct(product);
-    setFormData(product);
+    setFormData({
+      name: product.name,
+      category: product.category,
+      quantity: product.quantity,
+      unit_price: product.unit_price,
+      reorder_level: product.reorder_level,
+    });
     setIsOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setProducts(products.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      await deleteItem(id);
+    }
   };
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = inventory.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const lowStockItems = inventory.filter(item => item.quantity <= item.reorder_level);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
+        <p className="text-lg">{t('loading')}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
+      {lowStockItems.length > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {lowStockItems.length} item(s) are low on stock! Please restock soon.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Inventory</h1>
+          <h1 className="text-3xl font-bold">{t('inventory')}</h1>
           <p className="text-muted-foreground">Manage your products and stock</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -81,32 +105,41 @@ const Inventory = () => {
                 />
               </div>
               <div>
+                <Label>Category</Label>
+                <Input
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  placeholder="e.g., Grains, Oil, etc."
+                  required
+                />
+              </div>
+              <div>
                 <Label>Quantity</Label>
                 <Input
                   type="number"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
                   placeholder="0"
                   required
                 />
               </div>
               <div>
-                <Label>Selling Price (₦)</Label>
+                <Label>Unit Price (₦)</Label>
                 <Input
                   type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                  value={formData.unit_price}
+                  onChange={(e) => setFormData({ ...formData, unit_price: parseInt(e.target.value) || 0 })}
                   placeholder="0"
                   required
                 />
               </div>
               <div>
-                <Label>Cost Price (₦)</Label>
+                <Label>Reorder Level</Label>
                 <Input
                   type="number"
-                  value={formData.cost}
-                  onChange={(e) => setFormData({ ...formData, cost: parseInt(e.target.value) })}
-                  placeholder="0"
+                  value={formData.reorder_level}
+                  onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 5 })}
+                  placeholder="5"
                   required
                 />
               </div>
@@ -147,17 +180,23 @@ const Inventory = () => {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Selling Price:</span>
-                <span className="font-semibold">₦{product.price.toLocaleString()}</span>
+                <span className="text-muted-foreground">Category:</span>
+                <span className="font-semibold">{product.category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Cost Price:</span>
-                <span className="font-semibold">₦{product.cost.toLocaleString()}</span>
+                <span className="text-muted-foreground">Unit Price:</span>
+                <span className="font-semibold">₦{product.unit_price.toLocaleString()}</span>
               </div>
               <div className="flex justify-between pt-2 border-t">
-                <span className="text-muted-foreground">Profit per unit:</span>
-                <span className="font-semibold text-secondary">₦{(product.price - product.cost).toLocaleString()}</span>
+                <span className="text-muted-foreground">Total Value:</span>
+                <span className="font-semibold text-secondary">₦{(product.unit_price * product.quantity).toLocaleString()}</span>
               </div>
+              {product.quantity <= product.reorder_level && (
+                <div className="text-xs text-destructive flex items-center mt-2">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Low stock alert!
+                </div>
+              )}
             </div>
           </Card>
         ))}
