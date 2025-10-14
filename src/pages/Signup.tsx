@@ -44,7 +44,7 @@ const Signup = () => {
             <Label htmlFor="fullName">{t('fullName')}</Label>
             <Input
               id="fullName"
-              placeholder="John Doe"
+              placeholder="Name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
@@ -55,7 +55,7 @@ const Signup = () => {
             <Label htmlFor="phone">{t('phone')}</Label>
             <Input
               id="phone"
-              placeholder="08012345678"
+              placeholder="Phone Number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -67,7 +67,7 @@ const Signup = () => {
             <Input
               id="email"
               type="email"
-              placeholder="youremail@example.com"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -79,7 +79,7 @@ const Signup = () => {
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -91,7 +91,7 @@ const Signup = () => {
             <Label htmlFor="businessName">{t('businessName')} (Optional)</Label>
             <Input
               id="businessName"
-              placeholder="My Business"
+              placeholder="Business Name"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
             />
