@@ -100,7 +100,7 @@ const Inventory = () => {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Rice (50kg)"
+                  placeholder={t('product')}
                   required
                 />
               </div>
@@ -109,7 +109,7 @@ const Inventory = () => {
                 <Input
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Grains, Oil, etc."
+                  placeholder={t('category')}
                   required
                 />
               </div>
@@ -119,7 +119,7 @@ const Inventory = () => {
                   type="number"
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
+                  placeholder={t('quantity')}
                   required
                 />
               </div>
@@ -129,7 +129,7 @@ const Inventory = () => {
                   type="number"
                   value={formData.unit_price}
                   onChange={(e) => setFormData({ ...formData, unit_price: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
+                  placeholder={t('price')}
                   required
                 />
               </div>
@@ -154,7 +154,7 @@ const Inventory = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
-          placeholder="Search products..."
+          placeholder={`${t('search')}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"

@@ -76,7 +76,7 @@ const Profile = () => {
     <div className="container mx-auto px-4 py-6 space-y-6 max-w-2xl">
       <div>
         <h1 className="text-3xl font-bold">{t('profile')}</h1>
-        <p className="text-muted-foreground">Manage your business information</p>
+        <p className="text-muted-foreground">{t('manageInfo')}</p>
       </div>
 
       {/* Premium Upgrade Card */}
@@ -85,10 +85,10 @@ const Profile = () => {
           <div>
             <div className="flex items-center space-x-2 mb-2">
               <Crown className="h-6 w-6" />
-              <h3 className="text-xl font-bold">Upgrade to Premium</h3>
+              <h3 className="text-xl font-bold">{t('upgradeToPremium')}</h3>
             </div>
             <p className="text-sm opacity-90 mb-4">
-              Get SMS reminders, advanced analytics, cloud backup, and more for just ₦500/month
+              {t('premiumDescription')}
             </p>
             <Button variant="secondary" size="lg">
               {t('upgradePlan')}
@@ -115,6 +115,7 @@ const Profile = () => {
             <Input
               value={profile.full_name}
               onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+              placeholder={t('fullName')}
             />
           </div>
 
@@ -126,6 +127,7 @@ const Profile = () => {
             <Input
               value={profile.business_name}
               onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
+              placeholder={t('businessName')}
             />
           </div>
 
@@ -137,6 +139,7 @@ const Profile = () => {
             <Input
               type="email"
               value={user?.email || ""}
+              placeholder={t('email')}
               disabled
             />
           </div>
@@ -149,12 +152,13 @@ const Profile = () => {
             <Input
               value={profile.phone}
               onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              placeholder={t('phone')}
             />
           </div>
         </div>
 
         <Button className="w-full mt-6 bg-gradient-primary" onClick={handleSave}>
-          {t('save')} Changes
+          {t('save')}
         </Button>
       </Card>
     </div>

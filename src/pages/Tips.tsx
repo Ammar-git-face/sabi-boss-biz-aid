@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Lightbulb, TrendingUp, Users, Target, DollarSign, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Tips = () => {
+  const { t } = useLanguage();
   const tips = [
     {
       icon: TrendingUp,
@@ -53,8 +55,8 @@ const Tips = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Business Tips</h1>
-        <p className="text-muted-foreground">Smart advice for Nigerian entrepreneurs</p>
+        <h1 className="text-3xl font-bold">{t('businessTips')}</h1>
+        <p className="text-muted-foreground">{t('smartAdvice')}</p>
       </div>
 
       {/* Daily Tip */}
@@ -64,7 +66,7 @@ const Tips = () => {
             <Lightbulb className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-2">Tip of the Day</h3>
+            <h3 className="text-xl font-bold mb-2">{t('tipOfDay')}</h3>
             <p className="text-lg opacity-95">
               Always ask for customer feedback. It helps you improve your products and service quality.
               Happy customers become your best marketers!
@@ -75,7 +77,7 @@ const Tips = () => {
 
       {/* Tips Grid */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Essential Business Tips</h2>
+        <h2 className="text-2xl font-bold">{t('essentialTips')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tips.map((tip, index) => (
             <Card key={index} className="p-6 shadow-card hover:shadow-elevated transition-all">
@@ -95,7 +97,7 @@ const Tips = () => {
 
       {/* Motivational Quotes */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Words of Wisdom</h2>
+        <h2 className="text-2xl font-bold">{t('wordsOfWisdom')}</h2>
         <div className="space-y-4">
           {quotes.map((quote, index) => (
             <Card key={index} className="p-6 shadow-card bg-muted/50">

@@ -66,7 +66,7 @@ const Sales = () => {
                 <Label>Product</Label>
                 <Select value={formData.product} onValueChange={(value) => setFormData({ ...formData, product: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select product" />
+                    <SelectValue placeholder={t('product')} />
                   </SelectTrigger>
                   <SelectContent>
                     {inventory.map((item) => (
@@ -91,7 +91,7 @@ const Sales = () => {
                   type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-                  placeholder="0"
+                  placeholder={t('price')}
                   required
                 />
               </div>
@@ -100,7 +100,7 @@ const Sales = () => {
                 <Input
                   value={formData.customer}
                   onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
-                  placeholder="Optional"
+                  placeholder={`${t('customer')} (${t('optional')})`}
                 />
               </div>
               <div>

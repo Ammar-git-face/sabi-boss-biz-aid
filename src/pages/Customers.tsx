@@ -29,8 +29,21 @@ const Customers = () => {
   };
 
   const sendWhatsApp = (phone: string, name: string) => {
+    if (!phone || phone.trim() === '') {
+      toast.error('Please add a phone number for this customer first');
+      return;
+    }
+    
+    // Clean phone number and convert to international format
+    const cleanPhone = phone.replace(/\s+/g, '').replace(/^0/, '234');
+    
+    if (cleanPhone.length < 10) {
+      toast.error('Invalid phone number format');
+      return;
+    }
+    
     const message = encodeURIComponent(`Hello ${name}, thank you for being a valued customer at our business!`);
-    const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '234')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
     toast.success('Opening WhatsApp...');
   };
@@ -67,7 +80,7 @@ const Customers = () => {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., John Doe"
+                  placeholder={t('name')}
                   required
                 />
               </div>
@@ -76,7 +89,7 @@ const Customers = () => {
                 <Input
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="08012345678"
+                  placeholder={t('phone')}
                   required
                 />
               </div>
@@ -86,7 +99,7 @@ const Customers = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="customer@email.com"
+                  placeholder={`${t('email')} (${t('optional')})`}
                 />
               </div>
               <Button type="submit" className="w-full bg-gradient-primary">

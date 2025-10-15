@@ -76,7 +76,7 @@ const Expenses = () => {
                 <Label>Category</Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t('category')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -91,7 +91,7 @@ const Expenses = () => {
                   type="number"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: parseInt(e.target.value) })}
-                  placeholder="0"
+                  placeholder={t('amount')}
                   required
                 />
               </div>
@@ -100,7 +100,7 @@ const Expenses = () => {
                 <Input
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Brief description"
+                  placeholder={t('description')}
                   required
                 />
               </div>
