@@ -4,6 +4,10 @@
   padding: 2rem;
   text-align: center;
 }
+footer a[href*="lovable.dev"] {
+  display: none !important;
+}
+
 
 .logo {
   height: 6em;
