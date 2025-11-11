@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Package, ShoppingCart, Receipt, Users, Wallet, Lightbulb, User, Moon, Sun, LogOut, Globe, WifiOff, Loader2 } from "lucide-react";
+import { Home, Package, ShoppingCart, Receipt, Users, Wallet, CreditCard, Lightbulb, User, Moon, Sun, LogOut, Globe, WifiOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,7 +28,8 @@ export const Navigation = () => {
     { to: "/sales", icon: ShoppingCart, label: t('sales') },
     { to: "/expenses", icon: Receipt, label: t('expenses') },
     { to: "/customers", icon: Users, label: t('customers') },
-    { to: "/loans", icon: Wallet, label: t('loans') },
+    { to: "/wallet", icon: Wallet, label: t('wallet') },
+    { to: "/loans", icon: CreditCard, label: t('loans') },
     { to: "/tips", icon: Lightbulb, label: t('tips') },
     { to: "/profile", icon: User, label: t('profile') },
   ];

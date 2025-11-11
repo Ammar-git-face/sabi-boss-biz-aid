@@ -12,6 +12,7 @@ import Sales from "./pages/Sales";
 import Expenses from "./pages/Expenses";
 import Customers from "./pages/Customers";
 import Loans from "./pages/Loans";
+import Wallet from "./pages/Wallet";
 import Tips from "./pages/Tips";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/customers" element={<Customers />} />
                 <Route path="/loans" element={<Loans />} />
+                <Route path="/wallet" element={<Wallet />} />
                 <Route path="/tips" element={<Tips />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>

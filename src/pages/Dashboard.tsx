@@ -1,11 +1,13 @@
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Users, Package, Receipt, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Package, Receipt, Wallet, CreditCard, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useSales } from "@/hooks/useSales";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useInventory } from "@/hooks/useInventory";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useLoans } from "@/hooks/useLoans";
+import { useWallet } from "@/hooks/useWallet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Gamification } from "@/components/Gamification";
 import { useMemo } from "react";
@@ -16,6 +18,7 @@ const Dashboard = () => {
   const { inventory, loading: inventoryLoading } = useInventory();
   const { customers, loading: customersLoading } = useCustomers();
   const { loans, loading: loansLoading } = useLoans();
+  const { balance: walletBalance, loading: walletLoading } = useWallet();
   const { t } = useLanguage();
 
   // Calculate real stats
@@ -106,7 +109,7 @@ const Dashboard = () => {
     }));
   }, [expenses]);
 
-  if (salesLoading || expensesLoading || inventoryLoading || customersLoading || loansLoading) {
+  if (salesLoading || expensesLoading || inventoryLoading || customersLoading || loansLoading || walletLoading) {
     return (
       <div className="container mx-auto px-4 py-6 flex items-center justify-center min-h-screen">
         <p className="text-lg">{t('loading')}</p>
@@ -125,6 +128,47 @@ const Dashboard = () => {
 
       {/* Gamification */}
       <Gamification />
+
+      {/* Wallet and Loan Quick Access Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link to="/wallet">
+          <Card className="p-6 shadow-card hover:shadow-elevated transition-all cursor-pointer bg-gradient-to-br from-primary/10 to-secondary/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('wallet')}</p>
+                  <p className="text-2xl font-bold">₦{walletBalance.toLocaleString()}</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">{t('managePayments')}</p>
+          </Card>
+        </Link>
+
+        <Link to="/loans">
+          <Card className="p-6 shadow-card hover:shadow-elevated transition-all cursor-pointer bg-gradient-to-br from-accent/10 to-destructive/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('loans')}</p>
+                  <p className="text-2xl font-bold">₦{totalLoans.toLocaleString()}</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {loans.length} {t('loans')} • {loans.filter(l => l.repayment_status !== 'paid').length} {t('pending')}
+            </p>
+          </Card>
+        </Link>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
