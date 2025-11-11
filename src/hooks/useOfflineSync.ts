@@ -7,9 +7,9 @@ export const useOfflineSync = () => {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      setIsSyncing(true);
+      setIsSyncing(false);
       // Trigger sync after coming back online
-      setTimeout(() => setIsSyncing(false), 2000);
+      setTimeout(() => setIsSyncing(true), 2000);
     };
 
     const handleOffline = () => {

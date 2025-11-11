@@ -33,7 +33,7 @@ export const translations: Translations = {
   businessName: { en: 'Business Name', ha: 'Sunan kasuwanci', pidgin: 'Business Name' },
   
   // Dashboard
-  totalSales: { en: 'Total Sales', ha: 'Jimlar tallace-tallace', pidgin: 'Total Sales' },
+  totalSales: { en: 'Total Sales', ha: 'Jimlar cinikaiya', pidgin: 'Total Sales' },
   totalExpenses: { en: 'Total Expenses', ha: 'Jimlar kashe kuɗi', pidgin: 'Total Expenses' },
   profit: { en: 'Profit', ha: 'Riba', pidgin: 'Profit' },
   stockAlerts: { en: 'Stock Alerts', ha: 'Sanarwar kaya', pidgin: 'Low Stock' },
@@ -67,7 +67,7 @@ export const translations: Translations = {
   
   // Subscription
   freeTier: { en: 'Free Tier', ha: 'Kyauta', pidgin: 'Free Plan' },
-  premiumTier: { en: 'Premium (₦500/month)', ha: 'Premium (₦500/wata)', pidgin: 'Premium (₦500/month)' },
+  premiumTier: { en: 'Premium (₦300/month)', ha: 'Premium (₦300/wata)', pidgin: 'Premium (₦300/month)' },
   
   // Offline
   offlineMode: { en: 'Offline Mode', ha: 'Aikin layi ba tare da', pidgin: 'No Internet' },
@@ -76,7 +76,7 @@ export const translations: Translations = {
   // Profile & Settings
   manageInfo: { en: 'Manage your business information', ha: 'Sarrafa bayanan kasuwancin ku', pidgin: 'Manage your business info' },
   upgradeToPremium: { en: 'Upgrade to Premium', ha: 'Haɓaka zuwa Premium', pidgin: 'Upgrade to Premium' },
-  premiumDescription: { en: 'Get SMS reminders, advanced analytics, cloud backup, and more for just ₦500/month', ha: 'Sami tunatarwar SMS, bincike mai zurfi, da sauransu a ₦500 kowane wata', pidgin: 'Get SMS reminder, better analytics, cloud backup, and more for just ₦500/month' },
+  premiumDescription: { en: 'Get SMS reminders, advanced analytics, cloud backup, and more for just ₦300/month', ha: 'Sami tunatarwar SMS, bincike mai zurfi, da sauransu akan naira 300 kacahal a wata', pidgin: 'Get SMS reminder, better analytics, cloud backup, and more for just ₦300/month' },
   
   // Loans & Savings
   loansAndSavings: { en: 'Loans & Savings', ha: 'Rancen kuɗi da Ajiya', pidgin: 'Loans & Savings' },

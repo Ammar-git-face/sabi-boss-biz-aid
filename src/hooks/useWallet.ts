@@ -8,13 +8,13 @@ import {
   getOfflineTransactions,
   getPendingSyncTransactions,
   markTransactionAsSynced,
-  deleteSyncedTransactions,
   deleteOfflineTransaction,
   markTransactionAsVerified,
   generateVerificationHash,
   generateQRCode,
   getWalletBalance,
   Transaction,
+  // REMOVE deleteSyncedTransactions import
 } from '@/lib/offlineWalletStorage';
 
 export const useWallet = () => {
@@ -31,17 +31,8 @@ export const useWallet = () => {
     }
   }, [user]);
 
-  // Auto-sync when coming back online
-  useEffect(() => {
-    if (isOnline && user) {
-      syncOfflineTransactions();
-    }
-  }, [isOnline, user]);
-
   const fetchTransactions = async () => {
     try {
-      // Fetch from Supabase (implement wallet table in database)
-      // For now, using offline storage as primary source
       const offlineTransactions = getOfflineTransactions();
       setTransactions(offlineTransactions);
     } catch (error) {
@@ -57,30 +48,40 @@ export const useWallet = () => {
   };
 
   const syncOfflineTransactions = async () => {
-    const pendingTransactions = getPendingSyncTransactions();
-    if (pendingTransactions.length === 0) return;
-
-    console.log('Syncing offline transactions:', pendingTransactions);
-
-    for (const offlineTx of pendingTransactions) {
-      try {
-        // TODO: Implement Supabase wallet transactions table
-        // For now, mark as synced after simulated delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        markTransactionAsSynced(offlineTx.transaction_code);
-        toast.success(`Transaction ${offlineTx.transaction_code} synced successfully`);
-      } catch (error) {
-        console.error('Failed to sync transaction:', error);
-      }
+    if (!isOnline) {
+      toast.error('Cannot sync while offline. Please connect to the internet.');
+      return false;
     }
 
-    // Clean up synced transactions after a delay
-    setTimeout(() => {
-      deleteSyncedTransactions();
+    const pendingTransactions = getPendingSyncTransactions();
+    if (pendingTransactions.length === 0) {
+      toast.info('No pending transactions to sync');
+      return true;
+    }
+
+    try {
+      toast.info(`Syncing ${pendingTransactions.length} transaction(s)...`);
+
+      // Sync all pending transactions but DON'T DELETE THEM
+      for (const offlineTx of pendingTransactions) {
+        // Simulate API call to Supabase
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // ONLY mark as synced - DON'T DELETE
+        markTransactionAsSynced(offlineTx.transaction_code);
+      }
+
+      // Refresh data WITHOUT deleting transactions
       fetchTransactions();
       calculateBalance();
-    }, 2000);
+      
+      toast.success(`Successfully synced ${pendingTransactions.length} transaction(s)`);
+      return true;
+
+    } catch (error) {
+      toast.error('Sync failed. Please check your connection.');
+      return false;
+    }
   };
 
   const sendPayment = async (amount: number, recipient: string) => {
@@ -103,24 +104,27 @@ export const useWallet = () => {
     const verificationHash = generateVerificationHash(amount, user?.id || '', Date.now());
     const qrCode = generateQRCode('', amount);
 
-    const transactionCode = saveOfflineTransaction({
+    const transactionData = {
       id: crypto.randomUUID(),
       type: 'send',
       amount,
       recipient,
-      status: isOnline ? 'pending_sync' : 'pending_sync',
+      status: 'pending_sync',
       verification_hash: verificationHash,
       qr_code: qrCode,
-    });
+      local_timestamp: new Date().toISOString(),
+    };
 
-    toast.success(`Payment Sent – ${transactionCode}`);
+    const transactionCode = saveOfflineTransaction(transactionData);
+
+    if (isOnline) {
+      toast.success(`Payment Sent – ${transactionCode} (Ready to sync)`);
+    } else {
+      toast.success(`Payment Sent – ${transactionCode} (Offline - sync when connected)`);
+    }
+
     fetchTransactions();
     calculateBalance();
-
-    // Trigger sync if online
-    if (isOnline) {
-      setTimeout(() => syncOfflineTransactions(), 1000);
-    }
   };
 
   const receivePayment = async (amount: number, sender: string) => {
@@ -129,22 +133,30 @@ export const useWallet = () => {
       return;
     }
 
-    const transactionCode = saveOfflineTransaction({
+    if (!sender) {
+      toast.error('Please enter sender details');
+      return;
+    }
+
+    const transactionData = {
       id: crypto.randomUUID(),
       type: 'receive',
       amount,
       sender,
       status: 'pending_sync',
-    });
+      local_timestamp: new Date().toISOString(),
+    };
 
-    toast.success(`Payment Received – ${transactionCode}`);
+    const transactionCode = saveOfflineTransaction(transactionData);
+
+    if (isOnline) {
+      toast.success(`Payment Received – ${transactionCode} (Ready to sync)`);
+    } else {
+      toast.success(`Payment Received – ${transactionCode} (Offline - sync when connected)`);
+    }
+
     fetchTransactions();
     calculateBalance();
-
-    // Trigger sync if online
-    if (isOnline) {
-      setTimeout(() => syncOfflineTransactions(), 1000);
-    }
   };
 
   const verifyTransaction = (transactionCode: string) => {
@@ -173,6 +185,13 @@ export const useWallet = () => {
   };
 
   const removeOfflineTransaction = (transactionCode: string) => {
+    const transaction = transactions.find(tx => tx.transaction_code === transactionCode);
+    
+    if (transaction?.status === 'synced') {
+      toast.error('Cannot delete synced transactions');
+      return;
+    }
+    
     deleteOfflineTransaction(transactionCode);
     toast.success('Transaction deleted');
     fetchTransactions();
@@ -189,5 +208,6 @@ export const useWallet = () => {
     getOfflineTransactionsList,
     removeOfflineTransaction,
     syncOfflineTransactions,
+    getPendingTransactions: getPendingSyncTransactions,
   };
 };
